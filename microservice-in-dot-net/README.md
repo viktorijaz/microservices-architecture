@@ -1,13 +1,34 @@
-# Microservices in
+A demonstration of deploying to the Azure Kubernetes Service (AKS). The target app is a simple microservice app in ASP.NET Core.
 
-Microservices in .NET Core Second Edition Manning
-https://dotnet.microsoft.com/en-us/learn/aspnet/microservice-tutorial/intro
+## Deploy ASP.NET Core microservices app to Azure Kuberentes Service
 
-https://learn.microsoft.com/en-us/training/paths/create-microservices-with-dotnet/
+#### Push your image to the docker registry
+```
+docker login
 
-https://github.com/dotnet-architecture/eShopOnContainers?WT.mc_id=dotnet-35129-website
+docker tag firstmicroservice viktorija11/firstmicroservice
 
-https://github.com/PacktPublishing/Software-Architecture-with-C-10-and-.NET-6-3E
+docker push viktorija11/firstmicroservice 
+```
+#### Create Azure Resource Group with an Azure Kuberenetes Cluster as a resource
+```
+az group create --name FirstMicroserviceResources --location westus
 
-.NET Microservices – Full Course - Les Jackson
-https://www.youtube.com/watch?v=DgVjEo3OGBI
+az account set -s 5e73ce8c-9153-4b71-baa6-c56715fc0451
+
+az aks create --resource-group FirstMicroserviceResources --name  FirstMicroserviceCluster --node-count 1 --enable-addons http_application_routing --generate-ssh-keys
+```
+#### Download AKS credentials file so that we can deplot in the cloud
+```
+az aks get-credentials --resource-group FirstMicroserviceResources --name FirstMicroserviceCluster
+```
+#### Ddeploy and run Kuberenetes Cluster
+```
+kubectl apply -f deploy.yaml
+kubectl get service firstmicroservice --watch
+kubectl scale --replicas=2 deployment/firstmicroservice
+```
+#### Delete previosly created resource group
+```
+az group delete -n FirstMicroserviceResources
+```
